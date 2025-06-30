@@ -1,0 +1,31 @@
+{
+    "users": {
+        "nabanitasaha433@gmail.com": "scrypt:32768:8:1$eWFSagA7nboWIW2w$c6e6ac6d0aba43a3e1ba9140ecf5aafb516e461043a1e440599eb092161573fd1ebaf858cdb9f27102754fa3a08a633de4162802c0843908d5fbd43ec25f1eda"
+    },
+    "entries": {
+        "nabanitasaha433@gmail.com": [
+            {
+                "id": 4,
+                "title": "Starboy",
+                "content": "Im a motherfucking Starboy",
+                "date": "June 30, 2025",
+                "tags": [
+                    ""
+                ],
+                "mood": "Neutral",
+                "image": "Screenshot 2024-04-20 113035.png"
+            },
+            {
+                "id": 3,
+                "title": "If I was",
+                "content": "If I was enough just for myself.... just to survive",
+                "date": "June 30, 2025",
+                "tags": [
+                    ""
+                ],
+                "mood": "Happy",
+                "image": null
+            }
+        ]
+    }
+}

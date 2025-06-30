@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mindful Journal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">Mindful Journal</div>
+                <nav>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="#" id="new-entry-btn">New Entry</a></li>
+                        <li><a href="{{ url_for('logout') }}" id="log">Logout</a></li>
+
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="journal-container">
+<div class="sidebar">
+    <h3>Recent Entries</h3>
+
+    <!-- Date Picker -->
+    <div class="form-group">
+        <label for="entry-date-picker">Select Date</label>
+        <input type="date" id="entry-date-picker" class="form-control">
+    </div>
+
+    <!-- Filtered Entry List -->
+    <ul class="entry-list" id="filtered-entry-list">
+        {% for entry in entries %}
+        <li class="entry-item" data-id="{{ entry.id }}" data-date="{{ entry.date }}">
+            <div class="entry-title">{{ entry.title }}</div>
+            <div class="entry-date">{{ entry.date }}</div>
+        </li>
+        {% else %}
+        <li class="empty-state">No entries yet</li>
+        {% endfor %}
+    </ul>
+</div>
+ 
+            
+            <div class="main-content">
+                <form id="entry-form" method="POST" action="{{ url_for('add_entry') }}" enctype="multipart/form-data">
+
+                        <!-- Hidden input for editing existing entries -->
+                       <input type="hidden" name="entry_id" value="">
+
+                    <div class="entry-header">
+                        <h2 class="entry-form-title">New Journal Entry</h2>
+                        <div class="entry-meta">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                            <button type="button" id="delete-btn" class="btn btn-danger" style="display: none;">Delete</button>
+                        </div>
+                        <div id="entry-mood-display" style="margin-top: 10px; font-weight: bold;"></div>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="title" placeholder="Entry title" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea class="form-control entry-content" name="content" placeholder="Write your thoughts here..." required></textarea>
+                    </div>
+
+                        <!-- ✅ Mood Tracker goes here -->
+                          <div class="form-group">
+                              <label for="mood">Mood</label>
+                              <select name="mood" class="form-control" required>
+                                  <option value="">Select Mood</option>
+                                  <option value="Happy">😊 Happy</option>
+                                  <option value="Sad">😢 Sad</option>
+                                  <option value="Angry">😠 Angry</option>
+                                  <option value="Neutral">😐 Neutral</option>
+                              </select>
+                          </div>
+                          <div class="form-group">
+                           <label for="image">Upload Image</label>
+                             <input type="file" class="form-control" name="image" accept="image/*">
+                          </div>
+
+                    <div class="form-group">
+                        <label>Tags (comma separated)</label>
+                        <input type="text" class="form-control" name="tags" placeholder="reflection, gratitude, daily">
+                    </div>
+              </form>  <!-- End of the form -->
+
+            <!-- Show uploaded image if entry is selected -->
+
+
+                
+            </div>
+
+              <div id="entry-image-display" class="form-group" style="margin-top: 20px; display: none;">
+                <label>Uploaded Image:</label><br>
+                 <img id="entry-image" src="" alt="Entry Image" style="max-width: 100%; height: auto; margin-top: 10px;">
+             </div>
+
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const entryItems = document.querySelectorAll('.entry-item');
+    const deleteBtn = document.getElementById('delete-btn');
+    const datePicker = document.getElementById('entry-date-picker');
+    const entryList = document.getElementById('filtered-entry-list');
+    let currentEntryId = null;
+
+    // Add click handler for entries
+    entryItems.forEach(item => {
+        item.addEventListener('click', function() {
+            document.querySelectorAll('.entry-item').forEach(el => el.classList.remove('active'));
+            this.classList.add('active');
+
+            const entryId = this.getAttribute('data-id');
+            currentEntryId = entryId;
+
+            fetch(`/entry/${entryId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        alert("Entry not found.");
+                        return;
+                    }
+
+                    document.querySelector('.entry-form-title').textContent = data.title;
+                    document.querySelector('input[name="title"]').value = data.title;
+                    document.querySelector('textarea[name="content"]').value = data.content;
+                    document.querySelector('input[name="tags"]').value = data.tags.join(', ');
+
+                    deleteBtn.style.display = 'inline-block';
+
+                    //mood 
+                    document.querySelector('#entry-mood-display').                    textContent = "Mood: " + (data.mood || "Unknown");
+
+                    //hidden edit input
+                    
+                    document.querySelector('input[name="entry_id"]').value = data.id;
+
+
+                        // 🔽 INSERT THIS RIGHT BELOW mood display
+                   const imageDisplay = document.getElementById('entry-image-display');
+                   const imageTag = document.getElementById('entry-image');
+
+                   if (data.image) {
+                       imageTag.src = `/static/uploads/${data.image}`;
+                       imageDisplay.style.display = 'block';
+                   } else {
+                       imageTag.src = ""; // clear the old image
+                       imageDisplay.style.display = 'none';
+                   }
+
+                    
+                });
+        });
+    });
+
+    // New entry button
+    document.getElementById('new-entry-btn').addEventListener('click', function(e) {
+    e.preventDefault();
+    document.querySelectorAll('.entry-item').forEach(el => el.classList.remove('active'));
+
+    currentEntryId = null;
+    document.querySelector('.entry-form-title').textContent = "New Journal Entry";
+    document.querySelector('input[name="title"]').value = "";
+    document.querySelector('textarea[name="content"]').value = "";
+    document.querySelector('input[name="tags"]').value = "";
+    deleteBtn.style.display = 'none';
+
+    // ✅ Clear mood display and image preview
+    document.querySelector('#entry-mood-display').textContent = "";
+    document.getElementById('entry-image-display').style.display = 'none';
+    document.getElementById('entry-image').src = "";
+});
+
+
+   //edit
+    document.querySelector('input[name="entry_id"]').value = "";
+
+
+
+    // Delete button
+    deleteBtn.addEventListener('click', function() {
+        if (!currentEntryId) return;
+
+        if (confirm("Are you sure you want to delete this entry?")) {
+            fetch(`/delete_entry/${currentEntryId}`, { method: 'POST' })
+                .then(() => window.location.reload());
+        }
+    });
+
+
+
+    // Filter entries by selected date
+    datePicker.addEventListener('change', function() {
+        const selectedDate = new Date(this.value);
+        const selectedDateStr = selectedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+        document.querySelectorAll('.entry-item').forEach(item => {
+            const itemDate = item.getAttribute('data-date');
+            if (itemDate === selectedDateStr) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
+
+
+
+</body>
+</html>

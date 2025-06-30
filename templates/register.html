@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="wrapper">
+        <div class="login-box">
+            <form method="POST">
+                <h2>Register</h2>
+<div class="input-box">
+    <input type="email" name="email" required>
+    <label for="email">Email</label>
+</div>
+
+
+                <div class="input-box">
+                    <input type="password" name="password" required>
+                    <label>Password</label>
+                </div>
+
+                <button type="submit">Register</button>
+
+                <div class="register-link">
+                    <p>Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
